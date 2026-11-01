@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Independent Incident 9 CloudFormation rollback laboratory
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+Resources:
+  IncidentSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Incident 9 isolated security group; Terraform does not own it
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: 10.61.0.0/16
+Outputs:
+  SecurityGroupId:
+    Value: !Ref IncidentSecurityGroup

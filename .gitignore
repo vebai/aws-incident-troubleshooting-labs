@@ -1,0 +1,34 @@
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+terraform.tfvars
+*.auto.tfvars
+*.pem
+.env
+.DS_Store
+__pycache__/
+*.pyc
+VALIDATION_RESULTS.md
+
+evidence/*
+!evidence/README.md
+# Terraform plans and local runtime configuration
+*.tfplan
+*.tfvars.json
+.terraform.lock.hcl.tmp
+# Local test artefacts, credentials and private validation
+incident-07-isolated-lab-patch/
+incident-07-corrected-patch/
+incident-07-iam-fix/
+*.zip
+*.log
+*.bak
+.aws/
+*.p12
+*.key
+*.p8
+*.crt
+*.cer
+*.pub
+*.tfplan.json

@@ -1,0 +1,10 @@
+#!/bin/bash
+set -euxo pipefail
+exec > >(tee -a /var/log/incident-07-bootstrap.log) 2>&1
+# Purposefully reproduce a bootstrap dependency failure in the lab.
+# Both lab keys are covered by the isolated least-privilege instance role.
+# Only catalog.json exists. The wrong key should produce NoSuchKey/404.
+# The repaired path tests dependency retrieval, not Shop app readiness.
+aws s3 cp 's3://${bucket}/${key}' /tmp/incident-07-config
+printf 'Incident 07 bootstrap dependency downloaded successfully\n'
+# A successful download proves the bootstrap prerequisite, not a running Shop app.

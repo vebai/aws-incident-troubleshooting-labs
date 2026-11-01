@@ -1,0 +1,1 @@
+Optional AWS troubleshooting labs for Victor Ebai's book: deploy Shop, reproduce controlled failures, investigate and verify recovery.

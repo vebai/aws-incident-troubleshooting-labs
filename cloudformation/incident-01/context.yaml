@@ -1,0 +1,12 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Independent, low-cost context lookup laboratory for Incident 1
+Resources:
+  ContextParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub '/incident-labs/${AWS::StackName}/context'
+      Type: String
+      Value: lab-ready
+Outputs:
+  ContextParameterName:
+    Value: !Ref ContextParameter
