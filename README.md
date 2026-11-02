@@ -19,6 +19,8 @@ Work through the steps in this order:
 5. **Create the failure.** Use the incident's documented control, then return to the book to investigate.
 6. **Reset or clean up.** Restore the exercise, or remove AWS resources when finished.
 
+**Before deploying Shop:** [replace the example HTTP source CIDR with your current public IPv4 address](#important-replace-the-example-ip-address-before-deployment). The sample IP cannot grant access to your computer.
+
 Each experiment follows **Build → Verify → Inject → Investigate → Repair → Verify → Reset**. The scripts create faults and provide initial controls; **they do not provide a diagnosis or a substitute for the book**.
 
 ## Which environment do I need?
@@ -86,7 +88,26 @@ cp terraform/terraform.tfvars.example terraform/terraform.tfvars
 nano terraform/terraform.tfvars
 ```
 
-In that file, set your AWS Region and `allowed_http_cidrs` (the public source IP ranges allowed to reach the test website). A narrow value such as **your current public IP address followed by `/32`** limits exposure. Replace the sample address with your own; do not assume the examples are suitable for your network.
+### Important: Replace the example IP address before deployment
+
+The `allowed_http_cidrs` setting controls which public IPv4 addresses can reach the Shop Application Load Balancer on HTTP port 80. **The sample value `203.0.113.10/32` is a documentation placeholder, not your computer’s address.** If you leave it unchanged, the ALB target may be healthy while requests from your computer time out.
+
+On **your own computer** (not inside the EC2 Session Manager shell), find your current public IPv4 address:
+
+```bash
+curl -4 https://checkip.amazonaws.com
+```
+
+Then open `terraform/terraform.tfvars` and replace the example CIDR with the IPv4 address returned by that command, followed by `/32`. For example, if the command returned `198.51.100.25`, you would enter:
+
+```hcl
+allowed_http_cidrs = ["198.51.100.25/32"]
+```
+
+**Both example IPs above are documentation addresses. Use the actual address from your own command.** The `/32` suffix permits that single IPv4 address. Keep access limited to your intended source rather than opening the application to the whole internet.
+
+Your public IP may change when you change networks or use a VPN. If the ALB target remains healthy but requests from your computer time out, check your current IP again and update `terraform/terraform.tfvars`. Review and apply a new Terraform plan before repeating the health checks.
+
 
 Prepare and check the deployment:
 
@@ -104,7 +125,31 @@ scripts/show-resources.sh
 scripts/validate-baseline.sh
 ```
 
-The final command should report **`Baseline healthy: PASS`** and HTTP `200` for `/healthz`, `/readyz` and `/catalog`. It also displays the target health. Confirm Session Manager access and the expected S3 catalogue object when required by your exercise. An EC2 instance being `running` does not by itself prove that requests succeed.
+### Verify the healthy baseline before injecting a failure
+
+Run `scripts/validate-baseline.sh` from your computer. All three HTTP endpoints must return `200`, the ALB target must report `healthy`, and the script must finish with:
+
+```text
+healthz: 200
+readyz: 200
+catalog: 200
+Baseline healthy: PASS
+```
+
+For a closer look, you can also test the actual ALB URL:
+
+```bash
+ALB=$(terraform -chdir=terraform output -raw alb_url)
+curl -i --connect-timeout 5 --max-time 12 "$ALB/healthz"
+curl -i --connect-timeout 5 --max-time 12 "$ALB/readyz"
+curl -i --connect-timeout 5 --max-time 12 "$ALB/catalog"
+```
+
+The `/catalog` response should contain the Shop catalogue data. Confirm Session Manager access and the expected S3 object when required by an incident. An EC2 instance showing `running`, or even an ALB target showing `healthy`, does not by itself prove your computer can reach the application.
+
+**If the target is healthy but your external requests time out:** compare the public IPv4 address returned by `curl -4 https://checkip.amazonaws.com` with `allowed_http_cidrs` in `terraform/terraform.tfvars`. Correct the CIDR, review a new Terraform plan, apply only the intended security-group change, and rerun `scripts/validate-baseline.sh`.
+
+**Begin incident injection only when the required baseline checks pass.**
 
 If any check fails, investigate the setup error before introducing a new fault. You can use the troubleshooting reminder in the book and the [lab operating notes](docs/troubleshooting-labs.md).
 
