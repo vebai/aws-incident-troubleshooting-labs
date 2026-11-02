@@ -14,14 +14,6 @@ Resources:
           FromPort: 8080
           ToPort: 8080
           CidrIp: 10.61.0.0/16
-  DuplicateIngress:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !Ref IncidentSecurityGroup
-      IpProtocol: tcp
-      FromPort: 8080
-      ToPort: 8080
-      CidrIp: 10.61.0.0/16
   MissingSourceIngress:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:

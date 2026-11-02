@@ -21,7 +21,7 @@ case "$caseid:$action" in
 03:setup|04:setup|05:setup|06:setup|08:setup) "$ROOT/scripts/validate-baseline.sh";;
 03:inject) ssm 'sudo systemctl stop shop-app' ;;
 03:reset|03:cleanup) ssm 'sudo systemctl start shop-app' ;;
-03:status) ssm 'sudo systemctl status shop-app --no-pager' ;;
+03:status) ssm "systemctl is-active shop-app || true";;
 04:inject) ssm 'sudo iptables -I INPUT 1 -p tcp --dport 8000 -j REJECT' ;;
 04:reset|04:cleanup) ssm 'sudo iptables -D INPUT -p tcp --dport 8000 -j REJECT' ;;
 04:status) ssm 'sudo iptables -S INPUT' ;;
@@ -34,7 +34,9 @@ case "$caseid:$action" in
  if [[ "$marker" != None && -n "$marker" ]]; then aws s3api delete-object --bucket "$BUCKET" --key catalog.json --version-id "$marker" >/dev/null; echo 'Latest delete marker removed'; else echo 'No current delete marker'; fi;;
 06:status) aws s3api list-object-versions --bucket "$BUCKET" --prefix catalog.json --query '{Versions:Versions[].{ID:VersionId,Latest:IsLatest},Markers:DeleteMarkers[].{ID:VersionId,Latest:IsLatest}}' --output json;;
 08:inject) aws cloudwatch put-metric-alarm --alarm-name "$ALARM" --metric-name UnrelatedSyntheticMetric --namespace ShopLab/DeliberatelyWrong --statistic Sum --period 60 --evaluation-periods 1 --threshold 0 --comparison-operator GreaterThanThreshold --treat-missing-data notBreaching;;
-08:reset|08:cleanup) echo "Restore via reviewed alarm-only plan: terraform -chdir=terraform plan -target='aws_cloudwatch_metric_alarm.alb_5xx[0]' -out=incident-08-alarm-only.tfplan ; terraform -chdir=terraform apply incident-08-alarm-only.tfplan";;
+08:reset|08:cleanup)
+  echo "MANUAL RECOVERY REQUIRED: The CloudWatch alarm has not been restored. Follow labs/incident-08/README.md to review and apply the alarm-only Terraform recovery plan, then verify alarm configuration and a full no-change Terraform plan." >&2
+  exit 1;;
 08:status) aws cloudwatch describe-alarms --alarm-names "$ALARM" --query 'MetricAlarms[].{Name:AlarmName,Metric:MetricName,Namespace:Namespace,State:StateValue}' --output table;;
 09:setup)
  aws cloudformation deploy --stack-name shop-rollback-lab --template-file "$ROOT/cloudformation/incident-09/baseline.yaml" --parameter-overrides "VpcId=$(value vpc_id)" --region "$REGION";;

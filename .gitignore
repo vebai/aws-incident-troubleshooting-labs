@@ -32,3 +32,64 @@ incident-07-iam-fix/
 *.cer
 *.pub
 *.tfplan.json
+# Python and local tooling
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.DS_Store
+.idea/
+.vscode/
+
+# Terraform provider dependency lock files
+**/.terraform.lock.hcl
+
+# Terraform working directories and providers (all modules)
+**/.terraform/
+**/.terraform.lock.hcl
+
+# Terraform state and backups (all modules)
+**/*.tfstate
+**/*.tfstate.*
+**/terraform.tfvars
+**/terraform.tfvars.json
+**/*.auto.tfvars
+**/*.auto.tfvars.json
+**/override.tf
+**/override.tf.json
+**/*_override.tf
+**/*_override.tf.json
+**/crash.log
+**/crash.*.log
+
+# Saved plans, including incident-07 and incident-08 plans
+**/*.tfplan
+**/*.tfplan.*
+**/*.tfplan.json
+**/*.plan
+**/tfplan
+**/incident-07-reset.tfplan
+**/incident08-*.tfplan
+**/incident-08-*.tfplan
+
+# Local cloud credentials, environment values, and validation outputs
+.env
+.env.*
+!.env.example
+!.env.sample
+*.local.env
+*.log
+*.log.*
+validation-output/
+test-results/
+
+# Temporary backups
+*.swp
+*.swo
+*~

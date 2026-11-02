@@ -1,3 +1,9 @@
+# Replace the example CIDR with your current public IPv4 address followed by /32.
+# You can check your public IPv4 from your computer:
+# curl -4 https://checkip.amazonaws.com
+# Example addresses such as 203.0.113.10/32 are placeholders, not usable client IPs.
+# Keep this rule restricted to the address or network you intend to use.
+
 aws_region = "eu-west-2"
 project = "shop-incident-lab"
 instance_type = "t3.micro"

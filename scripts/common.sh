@@ -20,7 +20,57 @@ confirm() {
   [[ "${CONFIRM_LAB_CHANGES:-}" == YES ]] || { echo 'Set CONFIRM_LAB_CHANGES=YES before changing lab resources'; exit 1; }
 }
 ssm() {
-  local id; id=$(instance)
-  [[ "$id" != None && -n "$id" ]] || { echo 'No ASG instance'; exit 1; }
-  aws ssm send-command --instance-ids "$id" --document-name AWS-RunShellScript --parameters "commands=$1" --query 'Command.CommandId' --output text
+  local id command_id status
+
+  id=$(instance)
+
+  if [[ -z "$id" || "$id" == "None" ]]; then
+    echo "ERROR: No Auto Scaling instance found." >&2
+    return 1
+  fi
+
+  command_id=$(aws ssm send-command \
+    --instance-ids "$id" \
+    --document-name AWS-RunShellScript \
+    --parameters "commands=$1" \
+    --region "$REGION" \
+    --query 'Command.CommandId' \
+    --output text) || return 1
+
+  echo "SSM command submitted: $command_id"
+
+  if ! aws ssm wait command-executed \
+    --command-id "$command_id" \
+    --instance-id "$id" \
+    --region "$REGION"; then
+
+    echo "ERROR: SSM command did not complete successfully." >&2
+
+    aws ssm get-command-invocation \
+      --command-id "$command_id" \
+      --instance-id "$id" \
+      --region "$REGION" \
+      --query '{Status:Status,Details:StatusDetails,Error:StandardErrorContent}' \
+      --output json || true
+
+    return 1
+  fi
+
+  status=$(aws ssm get-command-invocation \
+    --command-id "$command_id" \
+    --instance-id "$id" \
+    --region "$REGION" \
+    --query 'Status' \
+    --output text) || return 1
+
+echo "SSM execution status: $status"
+
+aws ssm get-command-invocation \
+  --command-id "$command_id" \
+  --instance-id "$id" \
+  --region "$REGION" \
+  --query 'StandardOutputContent' \
+  --output text || return 1
+
+[[ "$status" == "Success" ]]
 }

@@ -23,8 +23,8 @@ resource "aws_iam_role_policy_attachment" "ssm" {
 # authorisation failure (403). Both object keys are confined to this lab.
 data "aws_iam_policy_document" "bootstrap" {
   statement {
-    sid       = "ReadOnlyLabBootstrapKeys"
-    actions   = ["s3:GetObject"]
+    sid     = "ReadOnlyLabBootstrapKeys"
+    actions = ["s3:GetObject"]
     resources = [
       "arn:aws:s3:::${var.catalog_bucket}/${var.catalog_key}",
       "arn:aws:s3:::${var.catalog_bucket}/shop.env"
@@ -58,9 +58,9 @@ data "aws_caller_identity" "current" {}
 # Separate resources: do not modify the existing Shop ASG or launch template.
 # On purpose, EC2-only ASG health checks prevent an unbounded replacement loop.
 resource "aws_launch_template" "incident" {
-  name_prefix   = "${var.project_prefix}-lt-"
-  image_id      = var.ami_id
-  instance_type = var.instance_type
+  name_prefix            = "${var.project_prefix}-lt-"
+  image_id               = var.ami_id
+  instance_type          = var.instance_type
   vpc_security_group_ids = [var.security_group_id]
   iam_instance_profile { name = aws_iam_instance_profile.incident.name }
   metadata_options {
@@ -69,25 +69,25 @@ resource "aws_launch_template" "incident" {
   }
   user_data = base64encode(templatefile("${path.module}/bootstrap.sh.tftpl", {
     bucket = var.catalog_bucket
-    key = var.inject_failure ? "shop.env" : "${var.catalog_key}"
+    key    = var.inject_failure ? "shop.env" : "${var.catalog_key}"
   }))
   tag_specifications {
     resource_type = "instance"
-    tags = { Name = "${var.project_prefix}-instance", Project = var.project_prefix }
+    tags          = { Name = "${var.project_prefix}-instance", Project = var.project_prefix }
   }
   lifecycle { create_before_destroy = true }
 }
 
 resource "aws_autoscaling_group" "incident" {
-  name_prefix = "${var.project_prefix}-asg-"
-  min_size = 0
-  max_size = 1
-  desired_capacity = 1
-  health_check_type = "EC2"
+  name_prefix               = "${var.project_prefix}-asg-"
+  min_size                  = 0
+  max_size                  = 1
+  desired_capacity          = 1
+  health_check_type         = "EC2"
   health_check_grace_period = 240
-  vpc_zone_identifier = [var.subnet_id]
+  vpc_zone_identifier       = [var.subnet_id]
   launch_template {
-    id = aws_launch_template.incident.id
+    id      = aws_launch_template.incident.id
     version = aws_launch_template.incident.latest_version
   }
   # Replacement occurs only after explicitly opting in to an instance refresh.
@@ -97,7 +97,7 @@ resource "aws_autoscaling_group" "incident" {
     preferences {
       min_healthy_percentage = 0
       max_healthy_percentage = 100
-      instance_warmup = 30
+      instance_warmup        = 30
     }
   }
   tag {

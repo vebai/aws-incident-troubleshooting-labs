@@ -4,15 +4,15 @@ terraform {
   required_providers {
 
     aws = {
- source = "hashicorp/aws", version = "~> 5.0" 
-}
+      source = "hashicorp/aws", version = "~> 5.0"
+    }
 
     random = {
- source = "hashicorp/random", version = "~> 3.6" 
-}
+      source = "hashicorp/random", version = "~> 3.6"
+    }
 
-  
-}
+
+  }
 
 
 }
@@ -21,11 +21,11 @@ provider "aws" {
 
   region = var.aws_region
   default_tags {
- tags = {
- Project = var.project, Environment = "training", ManagedBy = "terraform" 
-}
- 
-}
+    tags = {
+      Project = var.project, Environment = "training", ManagedBy = "terraform"
+    }
+
+  }
 
 
 }
