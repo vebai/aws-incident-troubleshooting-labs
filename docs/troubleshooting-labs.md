@@ -8,7 +8,7 @@
 6. Prove the original failing workflow has recovered.
 7. Reset or destroy lab resources; inspect retained resources and costs.
 
-**Limitations:** The incident scripts are untested candidate implementations. Chapter 7/Incident 07 and Incident 10 injection are disabled. Shell `setup` checks for incidents 02–08 require the shared Terraform stack. Incident 01 is independent and uses its own script.
+**Limitations:** The incident scripts are candidate implementations pending live AWS validation. Incident 07 uses a separate Terraform exercise; Incident 10 has no single injection command and combines existing controls as an alternative scenario. Incident 01 runs independently of shared Terraform state. Incident 08 requires a temporary second Shop target for the book's two-target observation. Run `bash scripts/validate-all.sh` for read-only local source checks; static success does not establish live behaviour.
 
 ## Confirm a Systems Manager command finished
 
