@@ -46,3 +46,8 @@ output "region" {
   value = var.aws_region
 }
 
+
+output "account_id" {
+  description = "Account that owns this lab deployment; scripts use it to reject cross-account changes."
+  value       = data.aws_caller_identity.current.account_id
+}
