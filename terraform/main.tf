@@ -305,17 +305,18 @@ resource "aws_autoscaling_group" "shop" {
 resource "aws_cloudwatch_metric_alarm" "alb_5xx" {
 
   count               = var.enable_alarm ? 1 : 0
-  alarm_name          = "${local.prefix}-alb-5xx"
+  alarm_name          = "${local.prefix}-unhealthy-hosts"
   namespace           = "AWS/ApplicationELB"
-  metric_name         = "HTTPCode_ELB_5XX_Count"
+  metric_name         = "UnHealthyHostCount"
   comparison_operator = "GreaterThanThreshold"
   threshold           = 0
   evaluation_periods  = 1
   period              = 60
-  statistic           = "Sum"
+  statistic           = "Maximum"
   treat_missing_data  = "notBreaching"
   dimensions = {
     LoadBalancer = aws_lb.shop.arn_suffix
+    TargetGroup  = aws_lb_target_group.shop.arn_suffix
   }
 
 
