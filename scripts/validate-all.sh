@@ -27,6 +27,7 @@ grep -Fq 'metric_name         = "UnHealthyHostCount"' terraform/main.tf || fail 
 grep -Fq 'TargetGroup  = aws_lb_target_group.shop.arn_suffix' terraform/main.tf || fail "TargetGroup dimension missing"
 grep -Fq 'LoadBalancer = aws_lb.shop.arn_suffix' terraform/main.tf || fail "LoadBalancer dimension missing"
 grep -Fq 'shop_desired_capacity' terraform/main.tf || fail "Incident 08 scaling variable missing"
+grep -Fq 'LAB_ACCOUNT=$(value account_id)' scripts/common.sh || fail "AWS account mismatch guard missing"
 if command -v terraform >/dev/null; then
   note "Terraform format check (all modules)"
   terraform fmt -check -recursive || fail "Terraform formatting differs"
@@ -41,8 +42,7 @@ if command -v terraform >/dev/null; then
 else
   note "SKIP Terraform format/validate (Terraform not installed)"
 fi
-if command -v aws >/dev/null; then
-  note "CloudFormation template syntax (offline)"
+note "CloudFormation template skeletons (offline)"
   python3 - <<'PY'
 from pathlib import Path
 for p in Path('cloudformation').rglob('*.yaml'):
@@ -50,7 +50,5 @@ for p in Path('cloudformation').rglob('*.yaml'):
     if 'AWSTemplateFormatVersion:' not in data or 'Resources:' not in data:
         raise SystemExit(f"Malformed template skeleton: {p}")
 PY
-else
-  note "SKIP AWS CloudFormation API validation (offline script)"
-fi
+note "AWS CloudFormation API validation must be run separately in the sandbox."
 printf '\nStatic repository checks: PASS (skipped checks shown above).\n'
