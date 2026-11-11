@@ -73,6 +73,8 @@ aws configure list
 scripts/preflight.sh
 ```
 
+The incident scripts compare your active AWS account with the account recorded when Terraform created the lab. If the accounts differ, they refuse to operate. Use the original sandbox credentials or a correctly configured SSO profile; do not bypass the guard.
+
 Confirm the **expected AWS account and Region** before creating resources. The project examples use `eu-west-2` (London). This matters because the labs change AWS resources deliberately. Keep credentials and local Terraform state private.
 
 ## Local source checks (no AWS changes)
