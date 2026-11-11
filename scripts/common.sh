@@ -5,6 +5,13 @@ TF="$ROOT/terraform"
 command -v aws >/dev/null; command -v terraform >/dev/null
 value() { terraform -chdir="$TF" output -raw "$1"; }
 REGION=$(value region)
+LAB_ACCOUNT=$(value account_id)
+ACTUAL_ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+if [[ -z "$LAB_ACCOUNT" || "$LAB_ACCOUNT" == None || "$ACTUAL_ACCOUNT" != "$LAB_ACCOUNT" ]]; then
+  echo "ERROR: Terraform lab account ($LAB_ACCOUNT) does not match active AWS credentials ($ACTUAL_ACCOUNT)." >&2
+  echo "Switch to the correct sandbox profile before running any incident command." >&2
+  exit 1
+fi
 AWS_DEFAULT_REGION="$REGION"; export AWS_DEFAULT_REGION
 ASG=$(value asg_name)
 BUCKET=$(value bucket)

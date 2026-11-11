@@ -34,9 +34,9 @@ Each experiment follows **Build → Verify → Inject → Investigate → Repair
 | [05](labs/incident-05/README.md) | Load balancer checks | Shared Shop environment |
 | [06](labs/incident-06/README.md) | S3 object | Shared Shop environment |
 | [07](labs/incident-07/README.md) | Server startup | Shared Shop networking and S3, **plus a separate Terraform test** |
-| [08](labs/incident-08/README.md) | Monitoring | Shared Shop environment |
+| [08](labs/incident-08/README.md) | Monitoring | Shared Shop environment; temporarily scale to **two targets** and restore one afterwards |
 | [09](labs/incident-09/README.md) | Stack rollback | Shared Shop VPC, **plus a separate CloudFormation stack** |
-| [10](labs/incident-10/README.md) | Multiple failures | Shared Shop environment; staged exercise |
+| [10](labs/incident-10/README.md) | Multiple failures | Shared Shop environment; staged **alternative** three-fault exercise (not the book's exact faults) |
 
 Incident 07's separate server is not connected to the Shop load balancer. Incident 09 has its own stack but needs the shared VPC. Read the corresponding incident guide before starting.
 
@@ -73,7 +73,13 @@ aws configure list
 scripts/preflight.sh
 ```
 
+The incident scripts compare your active AWS account with the account recorded when Terraform created the lab. If the accounts differ, they refuse to operate. Use the original sandbox credentials or a correctly configured SSO profile; do not bypass the guard.
+
 Confirm the **expected AWS account and Region** before creating resources. The project examples use `eu-west-2` (London). This matters because the labs change AWS resources deliberately. Keep credentials and local Terraform state private.
+
+## Local source checks (no AWS changes)
+
+From the repository root, run `bash scripts/validate-all.sh` to check Bash and Python syntax, expected lab guides and Terraform formatting. Terraform validation runs only for modules you have initialised; initialise each module with `terraform -chdir=<module> init -backend=false` when appropriate. These checks do not prove deployment, fault injection or cleanup. Keep live AWS testing separate.
 
 ## 3. Build the shared Shop environment
 

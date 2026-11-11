@@ -1,0 +1,45 @@
+name: Validate repository (no AWS deployment)
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Install Terraform CLI
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+      - name: Initialise Terraform providers without backend
+        run: |
+          terraform -chdir=terraform init -backend=false -input=false
+          terraform -chdir=labs/incident-07/terraform init -backend=false -input=false
+      - name: Run consolidated static checks
+        run: bash scripts/validate-all.sh
+      - name: Validate CloudFormation templates (syntax only)
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import yaml
+          class CFLoader(yaml.SafeLoader):
+              pass
+          def construct_intrinsic(loader, tag_suffix, node):
+              if isinstance(node, yaml.ScalarNode):
+                  return loader.construct_scalar(node)
+              if isinstance(node, yaml.SequenceNode):
+                  return loader.construct_sequence(node)
+              return loader.construct_mapping(node)
+          CFLoader.add_multi_constructor("!", construct_intrinsic)
+          for path in Path("cloudformation").rglob("*.yaml"):
+              doc = yaml.load(path.read_text(), Loader=CFLoader)
+              assert isinstance(doc, dict) and "Resources" in doc, path
+              print("PARSED", path)
+          PY

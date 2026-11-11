@@ -277,7 +277,7 @@ resource "aws_autoscaling_group" "shop" {
   vpc_zone_identifier       = aws_subnet.public[*].id
   min_size                  = 1
   max_size                  = 2
-  desired_capacity          = 1
+  desired_capacity          = var.shop_desired_capacity
   health_check_type         = "EC2"
   health_check_grace_period = 240
   target_group_arns         = [aws_lb_target_group.shop.arn]
@@ -305,17 +305,18 @@ resource "aws_autoscaling_group" "shop" {
 resource "aws_cloudwatch_metric_alarm" "alb_5xx" {
 
   count               = var.enable_alarm ? 1 : 0
-  alarm_name          = "${local.prefix}-alb-5xx"
+  alarm_name          = "${local.prefix}-unhealthy-hosts"
   namespace           = "AWS/ApplicationELB"
-  metric_name         = "HTTPCode_ELB_5XX_Count"
+  metric_name         = "UnHealthyHostCount"
   comparison_operator = "GreaterThanThreshold"
   threshold           = 0
   evaluation_periods  = 1
   period              = 60
-  statistic           = "Sum"
+  statistic           = "Maximum"
   treat_missing_data  = "notBreaching"
   dimensions = {
     LoadBalancer = aws_lb.shop.arn_suffix
+    TargetGroup  = aws_lb_target_group.shop.arn_suffix
   }
 
 

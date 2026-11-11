@@ -35,3 +35,13 @@ variable "confirm_public_http" {
 
 }
 
+
+# Set to 2 only for the optional Incident 08 two-target investigation.
+variable "shop_desired_capacity" {
+  type    = number
+  default = 1
+  validation {
+    condition     = contains([1, 2], var.shop_desired_capacity)
+    error_message = "Shop laboratory capacity must be 1 or 2."
+  }
+}

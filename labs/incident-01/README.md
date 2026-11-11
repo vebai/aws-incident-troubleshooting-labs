@@ -1,23 +1,24 @@
 # Incident 01 — The Missing Stack
 
-**Optional exercise.** An expected resource appears to be missing. The book provides the investigation; this page provides only the controls and safe exit.
+**Optional standalone exercise.** Investigate a CloudFormation stack that appears missing because the investigator is using the wrong AWS Region. No shared Shop infrastructure or Terraform state is required.
 
-**Requires:** AWS CLI and a practice account; the Shop environment is not needed. Run from the repository root.
-
-```bash
-# Create the small test stack in your chosen Region.
-aws cloudformation deploy --stack-name shop-context-lab --template-file cloudformation/incident-01/context.yaml --region "$AWS_DEFAULT_REGION"
-# Check the stack exists.
-aws cloudformation describe-stacks --stack-name shop-context-lab --region "$AWS_DEFAULT_REGION" --query 'Stacks[0].StackStatus' --output text
-# Explore the reported symptom using Incident 01 in the book.
-```
-
-**Stop and investigate.** Do not interpret the evidence here as an answer key.
-
-**Safe cleanup:**
+**Requires:** AWS CLI, a dedicated AWS sandbox, and CloudFormation permissions. From the repository root, confirm the AWS account and choose the stack's deployment Region (default: `eu-west-2`).
 
 ```bash
-# Delete only this experiment's stack and confirm deletion.
-aws cloudformation delete-stack --stack-name shop-context-lab --region "$AWS_DEFAULT_REGION"
-aws cloudformation wait stack-delete-complete --stack-name shop-context-lab --region "$AWS_DEFAULT_REGION"
+aws sts get-caller-identity
+export LAB_REGION=eu-west-2
+export CONFIRM_LAB_CHANGES=YES
+scripts/incident.sh 01 setup
+scripts/incident.sh 01 status
 ```
+
+**Stop and investigate:** Follow Incident 01 in the book. Query `shop-context-lab` without `--region` from a shell configured for a *different* Region, then explicitly query the correct `LAB_REGION`. This exercise changes caller context, not infrastructure. The book's `shop-baseline` is an illustrative stack name; the live lab uses `shop-context-lab`.
+
+**Safe cleanup:** Delete only the standalone laboratory stack in the Region where you created it:
+
+```bash
+scripts/incident.sh 01 cleanup
+aws cloudformation wait stack-delete-complete --stack-name shop-context-lab --region "$LAB_REGION"
+```
+
+If the initial query seems to show an absent stack, inspect the actual account, active identity, Region and stack name before concluding deletion occurred.

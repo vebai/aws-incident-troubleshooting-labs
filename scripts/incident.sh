@@ -1,6 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
-source "$(dirname "$0")/common.sh"
+# Incident 01 is standalone: do not resolve shared Shop Terraform outputs.
+if [[ "${1:-}" == "01" ]]; then
+ ROOT=$(cd "$(dirname "$0")/.." && pwd)
+ REGION="${LAB_REGION:-eu-west-2}"
+ command -v aws >/dev/null || { echo 'AWS CLI required' >&2; exit 1; }
+ confirm() {
+   local account
+   account=$(aws sts get-caller-identity --query Account --output text) || return 1
+   echo "Account: $account, lab Region: $REGION, stack: shop-context-lab"
+   [[ "${CONFIRM_LAB_CHANGES:-}" == YES ]] || {
+     echo 'Set CONFIRM_LAB_CHANGES=YES before changing lab resources' >&2; return 1;
+   }
+ }
+else
+ source "$(dirname "$0")/common.sh"
+fi
 [[ $# -eq 2 ]] || { echo 'Usage: scripts/incident.sh <01|02|03|04|05|06|08|09> <setup|inject|reset|status|cleanup>'; exit 2; }
 caseid=$1; action=$2
 [[ "$caseid" =~ ^(01|02|03|04|05|06|08|09)$ ]] || { echo 'Unsupported lab; see labs/README.md'; exit 2; }
@@ -33,7 +48,14 @@ case "$caseid:$action" in
  marker=$(aws s3api list-object-versions --bucket "$BUCKET" --prefix catalog.json --query 'DeleteMarkers[?IsLatest==`true`].VersionId|[0]' --output text)
  if [[ "$marker" != None && -n "$marker" ]]; then aws s3api delete-object --bucket "$BUCKET" --key catalog.json --version-id "$marker" >/dev/null; echo 'Latest delete marker removed'; else echo 'No current delete marker'; fi;;
 06:status) aws s3api list-object-versions --bucket "$BUCKET" --prefix catalog.json --query '{Versions:Versions[].{ID:VersionId,Latest:IsLatest},Markers:DeleteMarkers[].{ID:VersionId,Latest:IsLatest}}' --output json;;
-08:inject) aws cloudwatch put-metric-alarm --alarm-name "$ALARM" --metric-name UnrelatedSyntheticMetric --namespace ShopLab/DeliberatelyWrong --statistic Sum --period 60 --evaluation-periods 1 --threshold 0 --comparison-operator GreaterThanThreshold --treat-missing-data notBreaching;;
+08:inject)
+ # Intentionally omit the LoadBalancer dimension to reproduce the book's fault.
+ tg_suffix="${TG#*targetgroup/}"
+ aws cloudwatch put-metric-alarm --alarm-name "$ALARM" \
+   --namespace AWS/ApplicationELB --metric-name UnHealthyHostCount \
+   --dimensions "Name=TargetGroup,Value=targetgroup/$tg_suffix" \
+   --statistic Maximum --period 60 --evaluation-periods 1 --threshold 0 \
+   --comparison-operator GreaterThanThreshold --treat-missing-data notBreaching;;
 08:reset|08:cleanup)
   echo "MANUAL RECOVERY REQUIRED: The CloudWatch alarm has not been restored. Follow labs/incident-08/README.md to review and apply the alarm-only Terraform recovery plan, then verify alarm configuration and a full no-change Terraform plan." >&2
   exit 1;;
