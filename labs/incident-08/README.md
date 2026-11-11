@@ -1,34 +1,68 @@
 # Incident 08 — The Alarm That Never Fired
 
-**Optional exercise.** A monitoring alarm appears reassuring when it should be investigated. The book provides the investigation; this page provides only the controls and safe exit.
+**Optional two-target exercise.** The book investigates a CloudWatch alarm whose metric identity is incomplete. This lab uses a real `AWS/ApplicationELB / UnHealthyHostCount` alarm with the correct `LoadBalancer` and `TargetGroup` dimensions, then deliberately removes `LoadBalancer`.
 
-**Requires:** Working shared Shop practice environment. Run from the repository root.
+**Requires:** A healthy shared Shop lab, an AWS sandbox with capacity for two EC2 instances, and no faults left from previous incidents. Run from the repository root. **Do not proceed if another investigation is running.** The second instance incurs charges.
+
+## Establish two healthy targets
+
+Change only the private `terraform/terraform.tfvars` file (created during initial setup) to include:
+
+```hcl
+shop_desired_capacity = 2
+```
+
+Review the capacity change, then apply it:
 
 ```bash
-# Check the Shop, then trigger and inspect the monitoring experiment.
+terraform -chdir=terraform plan -out=incident-08-scale.tfplan
+terraform -chdir=terraform apply incident-08-scale.tfplan
 scripts/validate-baseline.sh
+TG=$(terraform -chdir=terraform output -raw target_group_arn)
+aws elbv2 describe-target-health --target-group-arn "$TG" --query 'TargetHealthDescriptions[].[Target.Id,TargetHealth.State]' --output table
+```
+
+**Verify exactly two registered, healthy targets before continuing**. Auto Scaling and ALB target registration take time. Do not introduce a failure until the second target becomes healthy.
+
+## Inject and investigate
+
+```bash
 export CONFIRM_LAB_CHANGES=YES
 scripts/incident.sh 08 inject
 scripts/incident.sh 08 status
-# Inspect the metric identity and dimensions, not only the alarm state.
-aws cloudwatch describe-alarms --alarm-names "$(terraform -chdir=terraform output -raw alarm_name)" --query 'MetricAlarms[0].{Metric:MetricName,Dimensions:Dimensions,TreatMissingData:TreatMissingData}'
+aws cloudwatch describe-alarms --alarm-names "$(terraform -chdir=terraform output -raw alarm_name)" --query 'MetricAlarms[0].{Metric:MetricName,Dimensions:Dimensions,State:StateValue,TreatMissingData:TreatMissingData}'
+# Now make one of the two application instances unavailable.
+scripts/incident.sh 03 inject
+aws elbv2 describe-target-health --target-group-arn "$TG" --query 'TargetHealthDescriptions[].[Target.Id,TargetHealth.State,TargetHealth.Reason]' --output table
 ```
 
-**Stop and investigate:** Use Incident 08 in the book. The injector deliberately omits the `LoadBalancer` dimension from the `AWS/ApplicationELB` `UnHealthyHostCount` alarm while keeping its `TargetGroup` dimension. This reproduces the book's incomplete metric identity; it does not test notification delivery. The default shared Shop baseline has one target, whereas the book illustrates two. The dimension investigation is still possible with one target.
+**Stop and investigate using Incident 08 in the book.** Allow time for ALB health checks and CloudWatch periods. Use observed target state and the metric dimensions as evidence. A missing dimension may leave the alarm showing `OK` when `treat_missing_data=notBreaching`; alarm state alone does not prove the application is healthy. This exercise does **not** deliver a notification.
 
-**Safe reset:** `scripts/incident.sh 08 reset` only prints instructions; it does not undo the change. Terraform must restore the existing alarm.
+## Recover and restore the one-instance baseline
+
+Restore the stopped service and confirm both targets are healthy:
 
 ```bash
-# Propose restoring only the lab alarm.
-terraform -chdir=terraform plan -target='aws_cloudwatch_metric_alarm.alb_5xx[0]' -out=incident-08-reset.tfplan
-# ONLY if the plan updates exactly one alarm and no other resource:
-terraform -chdir=terraform apply incident-08-reset.tfplan
-# Confirm the monitoring settings and Shop remain ready.
+scripts/incident.sh 03 reset
+scripts/validate-baseline.sh
+```
+
+The alarm is Terraform-managed. The `08 reset` action deliberately will not overwrite its state. Restore only the alarm after reviewing its plan:
+
+```bash
+terraform -chdir=terraform plan -target='aws_cloudwatch_metric_alarm.alb_5xx[0]' -out=incident-08-alarm-reset.tfplan
+# Apply ONLY if the planned modification is the intended alarm correction.
+terraform -chdir=terraform apply incident-08-alarm-reset.tfplan
 scripts/incident.sh 08 status
+```
+
+Remove `shop_desired_capacity = 2` from `terraform/terraform.tfvars` (or set it back to `1`). Then review and apply the scale-down plan:
+
+```bash
+terraform -chdir=terraform plan -out=incident-08-scale-down.tfplan
+terraform -chdir=terraform apply incident-08-scale-down.tfplan
 scripts/validate-baseline.sh
 terraform -chdir=terraform plan
 ```
 
-Confirm that the full Terraform plan has no unexpected changes. If you deliberately stopped an application target to test the metric, restore it and verify recovery before ending the exercise.
-
-Do not apply unrelated Terraform changes. Targeting is an exceptional recovery measure, not a normal deployment technique.
+Verify that exactly one target is healthy after scale-down and that the final Terraform plan has no unexpected changes. If any step fails, preserve the evidence and inspect the actual resources before proceeding. **Do not destroy the shared Shop environment while investigating.**
