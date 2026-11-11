@@ -1,37 +1,41 @@
-# Incident 10 — The Outage That Hid Three Failures
+# Incident 10 — Compound Failure (Alternative Live Exercise)
 
-**Optional exercise.** A single outage hides more than one independent problem. The book provides the investigation; this page provides only the controls and safe exit.
+**Optional alternative exercise.** The book's illustrated incident involves an ALB security-group reference, a readiness environment mismatch, and an alarm pointing at old resources. **This live lab intentionally uses different faults**: an IAM S3 explicit deny (Incident 02), a CloudWatch metric dimension error (Incident 08), and a stopped systemd application service (Incident 03). Do not expect the book's exact HTTP 504, readiness logs, or security-group evidence in this lab.
 
-**Requires:** Working shared Shop application, correct alarm settings, and no leftover fault from another exercise. **No single `10 inject` command exists**; this uses tested controls one at a time.
+**Requires:** A dedicated sandbox, a healthy one-instance shared Shop environment, a correctly configured baseline alarm and no leftover earlier incidents. The exercise introduces several independent failures. No single `10 inject` command exists.
+
+## Establish the healthy baseline and inject
 
 ```bash
-# Check the practice application and enable lab changes.
+aws sts get-caller-identity
 scripts/validate-baseline.sh
+terraform -chdir=terraform plan
 export CONFIRM_LAB_CHANGES=YES
-# Introduce the three controlled changes in sequence.
+# Introduce the independent failures in a controlled order.
 scripts/incident.sh 02 inject
 scripts/incident.sh 08 inject
 scripts/incident.sh 03 inject
-# Record initial observations, not a diagnosis.
+# Record initial evidence without interpreting it.
 scripts/incident.sh 02 status
 scripts/incident.sh 08 status
+scripts/incident.sh 03 status
 ```
 
-**Stop and investigate:** Follow Incident 10 in the book. Check that the SSM command returned by Incident 03 actually succeeded.
+**Stop and investigate.** Use the EVIDENCE framework from the book. Test the customer-facing `/catalog` endpoint, local service state, IAM policy evaluation and the configured metric dimensions. Record observed HTTP codes rather than expecting the book's illustrated 504. SSM commands must finish with `Success` before you regard the injection as applied. A failure during injection may leave a partially injected lab; proceed to the recovery sequence for changes that actually succeeded.
 
-**Safe recovery:** Restore each controlled change, then check the entire Shop. These commands are for safe recovery, not a diagnostic walkthrough.
+## Controlled recovery (not an answer key)
 
 ```bash
-# Restart the application and remove the incident IAM policy.
+# Restore the service, then remove the explicit IAM deny.
 scripts/incident.sh 03 reset
 scripts/incident.sh 02 reset
-# Restore only the changed alarm; review the plan first.
+# Restore the Terraform-managed alarm; review the plan before applying.
 terraform -chdir=terraform plan -target='aws_cloudwatch_metric_alarm.alb_5xx[0]' -out=incident-10-reset.tfplan
-# ONLY if one alarm changes and no other resource:
+# Apply ONLY if the plan contains exactly the intended alarm repair.
 terraform -chdir=terraform apply incident-10-reset.tfplan
-# Check the complete application and monitoring settings.
 scripts/incident.sh 08 status
 scripts/validate-baseline.sh
+terraform -chdir=terraform plan
 ```
 
-SSM start/stop commands return a command ID; check their execution outcome. If an injected command fails partway through, use the same safe recovery steps for whichever changes succeeded.
+**Closure proof:** Confirm that the application responds to `/healthz`, `/readyz` and `/catalog`; target health is restored; the injected inline IAM deny is absent; the CloudWatch alarm contains both `LoadBalancer` and `TargetGroup`; and the complete Terraform plan shows no unexpected changes. Preserve evidence when a step fails. Restore the healthy baseline before another incident.
