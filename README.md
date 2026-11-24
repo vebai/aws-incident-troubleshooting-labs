@@ -6,7 +6,7 @@ This is the optional companion repository for *AWS Incident Troubleshooting: 10 
 
 ## Get the paperback
 
-**[Find on Amazon UK](https://www.amazon.co.uk/s?k=AWS+Incident+Troubleshooting+Victor+Ebai&i=stripbooks)** (default) · [Amazon US](https://www.amazon.com/s?k=AWS+Incident+Troubleshooting+Victor+Ebai&i=stripbooks) · [Amazon India](https://www.amazon.in/s?k=AWS+Incident+Troubleshooting+Victor+Ebai&i=stripbooks)
+**[Find on Amazon UK](https://www.amazon.co.uk/dp/B0HRCL1B9J)** (default) · [Amazon US](https://www.amazon.com/dp/B0HRCL1B9J) · [Amazon India](https://www.amazon.in/dp/B0HRCL1B9J)
 
 **Quick navigation:** [Getting started](#start-here) · [Incident index](#which-environment-do-i-need) · [AWS setup](#2-prepare-your-aws-sandbox) · [Build Shop](#3-build-the-shared-shop-environment) · [Run an incident](#4-work-through-one-incident) · [Reset and cleanup](#7-reset-an-incident-or-delete-the-environment)
 
@@ -280,9 +280,9 @@ Read [the incident index](labs/README.md) for all ten exercises. The repository'
 
 ## Continue learning
 
-If you are new to building an AWS environment, [AWS Cloud Engineering in 10 Days](https://github.com/vebai/aws-cloud-engineering-in-10-days) covers IAM, networking, EC2, the Shop application, ALB, CloudWatch and operational verification before fault investigation. The two repositories use **separate lab resources**, not a shared Terraform state.
+If you are new to building an AWS environment, [AWS Cloud Engineering in 10 Days](https://www.amazon.co.uk/dp/B0HR7DPTP8) covers IAM, networking, EC2, the Shop application, ALB, CloudWatch and operational verification before fault investigation. The two repositories use **separate lab resources**, not a shared Terraform state.
 
-The [book on Amazon UK](https://www.amazon.co.uk/s?k=AWS+Incident+Troubleshooting+Victor+Ebai&i=stripbooks) contains the full diagnostic reasoning and recovery walkthroughs.
+The [book on Amazon UK](https://www.amazon.co.uk/dp/B0HRCL1B9J) contains the full diagnostic reasoning and recovery walkthroughs.
 
 ## Licence
 
