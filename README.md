@@ -1,12 +1,38 @@
 # AWS Incident Troubleshooting Labs
 
-**Official optional companion laboratory for *AWS Incident Troubleshooting: 10 Evidence-Based Investigations* by Victor Ebai.**
+This is the optional companion repository for *AWS Incident Troubleshooting: 10 Evidence-Based Investigations* by **Victor Ebai**. It provides the Terraform, CloudFormation, Shop application and controlled-failure scripts used to practise the book's investigations.
 
-**Book teaches. Repository provisions. You investigate.**
+**The book is fully self-contained.** It explains the incidents, evidence and diagnostic reasoning without requiring an AWS account or this repository. These labs add practical experience in a sandbox environment. **Book teaches; repository provisions; you investigate.**
 
-The book includes the investigations and their evidence, so you can learn from it without an AWS account. If you want to build hands-on experience, this repository provides the AWS resources and controlled failures you can investigate alongside the book. You can also explore the exercises independently; the complete diagnostic reasoning is taught in the book.
+## Get the paperback
 
-These labs use a **practice AWS account**, not production infrastructure. They can incur charges while running. Start with [prerequisites](PREREQUISITES.md) and [costs](COSTS.md).
+**[Find on Amazon UK](https://www.amazon.co.uk/s?k=AWS+Incident+Troubleshooting+Victor+Ebai&i=stripbooks)** (default) · [Amazon US](https://www.amazon.com/s?k=AWS+Incident+Troubleshooting+Victor+Ebai&i=stripbooks) · [Amazon India](https://www.amazon.in/s?k=AWS+Incident+Troubleshooting+Victor+Ebai&i=stripbooks)
+
+**Quick navigation:** [Getting started](#start-here) · [Incident index](#which-environment-do-i-need) · [AWS setup](#2-prepare-your-aws-sandbox) · [Build Shop](#3-build-the-shared-shop-environment) · [Run an incident](#4-work-through-one-incident) · [Reset and cleanup](#7-reset-an-incident-or-delete-the-environment)
+
+The investigations follow evidence across the application, load balancer, EC2, S3, IAM and monitoring boundaries, applying the book's EVIDENCE method.
+
+![AWS incident investigation learning overview showing the Shop system's ALB, EC2, S3 and CloudWatch evidence sources, followed by the eight-step EVIDENCE troubleshooting method from establishing context to proving recovery.](docs/images/aws-incident-troubleshooting-overview.png)
+
+*Investigate the first failed boundary, distinguish useful signals from noise, make the smallest justified repair and verify recovery. The service icons are conceptual evidence sources, not a literal sequential HTTP request path.*
+
+## What you will build and practise
+
+- Deploy and verify the shared Shop environment or use an isolated incident lab as directed.
+- Reproduce ten controlled scenarios involving IAM, EC2, networking, ALB health, S3, Auto Scaling, CloudWatch and CloudFormation.
+- Establish the healthy baseline before introducing a fault.
+- Collect evidence, test a hypothesis, repair the fault and verify the original requirement.
+- Reset each incident and remove only resources owned by the learning environment.
+
+The practical sequence is **Build → Verify → Inject → Investigate → Repair → Verify → Reset**. The scripts introduce faults and inspect initial status; they do **not** supply an automatic diagnosis.
+
+## Before you begin
+
+**First-time setup:** Read [AWS prerequisites](PREREQUISITES.md), [cost guidance](COSTS.md) and the [cleanup guide](docs/cleanup-guide.md). You will need Git, AWS CLI v2, Terraform, the Session Manager plugin and an authorised **non-production** AWS account. Some incidents require additional tools described in their guides.
+
+The lab Region is **AWS London (`eu-west-2`)**. Verify your account and Region before any change. Prefer short-lived credentials or IAM Identity Center; do not commit keys, Terraform state or real secrets.
+
+**Safety:** Running ALB, EC2, S3, CloudWatch or CloudFormation resources can incur charges. Limit external HTTP access to **your own public IPv4 /32** before deployment. The scripts pin the expected account and require explicit confirmation for fault injection. Never bypass those guards.
 
 ## Start here
 
@@ -251,3 +277,13 @@ aws-incident-troubleshooting-labs/
 ```
 
 Read [the incident index](labs/README.md) for all ten exercises. The repository's instructions cover how to create and reset failures; the book provides the complete investigation and engineering reasoning. **This repository is optional, but hands-on practice is strongly encouraged wherever you have a suitable AWS sandbox.**
+
+## Continue learning
+
+If you are new to building an AWS environment, [AWS Cloud Engineering in 10 Days](https://github.com/vebai/aws-cloud-engineering-in-10-days) covers IAM, networking, EC2, the Shop application, ALB, CloudWatch and operational verification before fault investigation. The two repositories use **separate lab resources**, not a shared Terraform state.
+
+The [book on Amazon UK](https://www.amazon.co.uk/s?k=AWS+Incident+Troubleshooting+Victor+Ebai&i=stripbooks) contains the full diagnostic reasoning and recovery walkthroughs.
+
+## Licence
+
+The reusable Terraform, CloudFormation and script examples are provided under the [MIT License](LICENSE). Book text and the learning illustration remain © 2026 Victor Ebai.
