@@ -4,9 +4,13 @@ This is the optional companion repository for *AWS Incident Troubleshooting: 10 
 
 **The book is fully self-contained.** It explains the incidents, evidence and diagnostic reasoning without requiring an AWS account or this repository. These labs add practical experience in a sandbox environment. **Book teaches; repository provisions; you investigate.**
 
-## Get the paperback
+## Get the book on Amazon
 
-**[Find on Amazon UK](https://www.amazon.co.uk/dp/B0HRCL1B9J)** · [Amazon US](https://www.amazon.com/dp/B0HRCL1B9J) · [Amazon India](https://www.amazon.in/dp/B0HRCL1B9J)
+<a id="get-the-paperback"></a>
+
+**Paperback:** [Amazon UK](https://www.amazon.co.uk/dp/B0HS4HZKLN) · [Amazon US](https://www.amazon.com/dp/B0HS4HZKLN) · [Amazon India](https://www.amazon.in/dp/B0HS4HZKLN)
+
+**Kindle eBook:** [Amazon UK](https://www.amazon.co.uk/dp/B0HRCL1B9J) · [Amazon US](https://www.amazon.com/dp/B0HRCL1B9J) · [Amazon India](https://www.amazon.in/dp/B0HRCL1B9J)
 
 **Quick navigation:** [Getting started](#start-here) · [Incident index](#which-environment-do-i-need) · [AWS setup](#2-prepare-your-aws-sandbox) · [Build Shop](#3-build-the-shared-shop-environment) · [Run an incident](#4-work-through-one-incident) · [Reset and cleanup](#7-reset-an-incident-or-delete-the-environment)
 
