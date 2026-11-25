@@ -6,7 +6,7 @@ This is the optional companion repository for *AWS Incident Troubleshooting: 10 
 
 ## Get the paperback
 
-**[Find on Amazon UK](https://www.amazon.co.uk/dp/B0HRCL1B9J)** (default) · [Amazon US](https://www.amazon.com/dp/B0HRCL1B9J) · [Amazon India](https://www.amazon.in/dp/B0HRCL1B9J)
+**[Find on Amazon UK](https://www.amazon.co.uk/dp/B0HRCL1B9J)** · [Amazon US](https://www.amazon.com/dp/B0HRCL1B9J) · [Amazon India](https://www.amazon.in/dp/B0HRCL1B9J)
 
 **Quick navigation:** [Getting started](#start-here) · [Incident index](#which-environment-do-i-need) · [AWS setup](#2-prepare-your-aws-sandbox) · [Build Shop](#3-build-the-shared-shop-environment) · [Run an incident](#4-work-through-one-incident) · [Reset and cleanup](#7-reset-an-incident-or-delete-the-environment)
 
